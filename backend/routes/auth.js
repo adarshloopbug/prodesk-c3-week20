@@ -10,7 +10,7 @@ const { authenticateJWT } = require('../middleware/auth');
  * Log in or switch user identity for demonstration
  */
 router.post('/login', (req, res) => {
-  const { username, userId } = req.body;
+  const { username, userId } = req.body || {};
 
   let user = null;
   if (userId) {

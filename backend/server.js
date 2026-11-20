@@ -19,14 +19,14 @@ app.use(cors({
 }));
 
 // Webhook routes mounted FIRST before global json parser (preserves raw buffer)
-app.use('/api/webhooks', webhookRoutes);
+app.use(['/api/webhooks', '/webhooks'], webhookRoutes);
 
 // JSON parser for all remaining API endpoints
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Health Check
-app.get('/api/health', (req, res) => {
+app.get(['/api/health', '/health'], (req, res) => {
   res.json({
     status: 'HEALTHY',
     service: 'VaultPay Financial Core',
@@ -36,9 +36,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Mount API Routes
+// Mount API Routes (support both /api and root prefixes for Vercel proxies)
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/invoices', invoiceRoutes);
 
 // Serve Static Frontend if built
 const frontendDist = path.join(__dirname, '..', 'frontend', 'dist');

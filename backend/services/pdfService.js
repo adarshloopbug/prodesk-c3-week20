@@ -1,12 +1,19 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const config = require('../config');
 
-const VAULT_DIR = path.join(__dirname, '..', 'vault', 'invoices');
-if (!fs.existsSync(VAULT_DIR)) {
-  fs.mkdirSync(VAULT_DIR, { recursive: true });
-}
+const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT;
+const VAULT_DIR = isServerless
+  ? path.join(os.tmpdir(), 'vault', 'invoices')
+  : path.join(__dirname, '..', 'vault', 'invoices');
+
+try {
+  if (!fs.existsSync(VAULT_DIR)) {
+    fs.mkdirSync(VAULT_DIR, { recursive: true });
+  }
+} catch (err) {}
 
 /**
  * Generates a high-fidelity B2B PDF invoice / receipt
@@ -34,7 +41,18 @@ function generateInvoicePDF(invoice, options = { saveToDisk: true }) {
 
       doc.on('data', chunk => buffers.push(chunk));
 
-      const writeStream = options.saveToDisk ? fs.createWriteStream(filePath) : null;
+      let writeStream = null;
+      if (options.saveToDisk) {
+        try {
+          writeStream = fs.createWriteStream(filePath);
+          writeStream.on('error', (err) => {
+            console.warn('[PDF Service] Disk write warning (falling back to memory):', err.message);
+            writeStream = null;
+          });
+        } catch (e) {
+          writeStream = null;
+        }
+      }
       if (writeStream) {
         doc.pipe(writeStream);
       }
@@ -208,18 +226,32 @@ function generateInvoicePDF(invoice, options = { saveToDisk: true }) {
         { align: 'center', width: 522 }
       );
 
+      let resolved = false;
       doc.end();
+
+      doc.on('end', () => {
+        const buffer = Buffer.concat(buffers);
+        if (!resolved) {
+          resolved = true;
+          resolve({ filePath: writeStream ? filePath : null, fileName, buffer });
+        }
+      });
 
       if (writeStream) {
         writeStream.on('finish', () => {
           const buffer = Buffer.concat(buffers);
-          resolve({ filePath, fileName, buffer });
+          if (!resolved) {
+            resolved = true;
+            resolve({ filePath, fileName, buffer });
+          }
         });
-        writeStream.on('error', reject);
-      } else {
-        doc.on('end', () => {
+        writeStream.on('error', (err) => {
+          console.warn('[PDF Service] Disk write stream error, using buffer:', err.message);
           const buffer = Buffer.concat(buffers);
-          resolve({ filePath: null, fileName, buffer });
+          if (!resolved) {
+            resolved = true;
+            resolve({ filePath: null, fileName, buffer });
+          }
         });
       }
     } catch (err) {

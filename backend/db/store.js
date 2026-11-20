@@ -1,10 +1,19 @@
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
-// Ensure vault directory exists for generated receipts
-const VAULT_DIR = path.join(__dirname, '..', 'vault', 'invoices');
-if (!fs.existsSync(VAULT_DIR)) {
-  fs.mkdirSync(VAULT_DIR, { recursive: true });
+// Ensure vault directory exists for generated receipts (safe for Vercel/Lambda read-only filesystems)
+const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT;
+const VAULT_DIR = isServerless
+  ? path.join(os.tmpdir(), 'vault', 'invoices')
+  : path.join(__dirname, '..', 'vault', 'invoices');
+
+try {
+  if (!fs.existsSync(VAULT_DIR)) {
+    fs.mkdirSync(VAULT_DIR, { recursive: true });
+  }
+} catch (err) {
+  // Silent fallback for restricted environments
 }
 
 // Initial seed data
