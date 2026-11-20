@@ -75,4 +75,7 @@ if (require.main === module) {
   });
 }
 
-module.exports = { app, server };
+// Export app directly for Vercel Serverless / Service compatibility
+module.exports = app;
+module.exports.app = app;
+module.exports.server = server;
