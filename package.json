@@ -1,0 +1,13 @@
+{
+  "name": "nexus-vaultpay-financial-core",
+  "version": "1.0.0",
+  "description": "VaultPay Financial Core for Nexus Corporate Services (CFO Evelyn Croft)",
+  "scripts": {
+    "test": "cd backend && npm test",
+    "start": "cd backend && npm start",
+    "build": "cd frontend && npm run build",
+    "dev": "cd backend && npm start"
+  },
+  "author": "Nexus Financial Core Architecture Team",
+  "license": "UNLICENSED"
+}
