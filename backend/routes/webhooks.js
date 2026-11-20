@@ -3,6 +3,8 @@ const router = express.Router();
 const stripeService = require('../services/stripeService');
 const store = require('../db/store');
 const config = require('../config');
+const { authenticateJWT } = require('../middleware/auth');
+const { requireInvoiceOwnership } = require('../middleware/idorGuard');
 
 /**
  * POST /api/webhooks/stripe
@@ -83,14 +85,9 @@ router.post('/stripe', express.raw({ type: '*/*' }), async (req, res) => {
  * cryptographically hashes it with HMAC-SHA256 using the real STRIPE_WEBHOOK_SECRET,
  * and passes it directly through the verifyWebhookSignature pipeline!
  */
-router.post('/simulate-webhook', express.json(), async (req, res) => {
+router.post('/simulate-webhook', express.json(), authenticateJWT, requireInvoiceOwnership, async (req, res) => {
   const { invoiceId, tamperSignature } = req.body;
-
-  if (!invoiceId) {
-    return res.status(400).json({ error: 'Missing invoiceId' });
-  }
-
-  const invoice = store.getInvoiceById(invoiceId);
+  const invoice = req.invoice || store.getInvoiceById(invoiceId);
   if (!invoice) {
     return res.status(404).json({ error: `Invoice ${invoiceId} not found.` });
   }

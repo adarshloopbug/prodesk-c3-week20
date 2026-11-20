@@ -16,7 +16,7 @@ export default function StripeCheckoutModal({ invoice, isOpen, onClose, onSucces
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [cardNumber, setCardNumber] = useState('4242 •••• •••• 4242');
+  const [cardNumber, setCardNumber] = useState('4242 4242 4242 4242');
   const [expiry, setExpiry] = useState('12/28');
   const [cvc, setCvc] = useState('842');
   const [cardHolder, setCardHolder] = useState(invoice?.clientName || 'Corporate Signatory');

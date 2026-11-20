@@ -159,6 +159,14 @@ class StripeService {
     });
     updatedInvoice.emailReceiptSentAt = new Date().toISOString();
 
+    console.log(`\n======================================================`);
+    console.log(`[STRIPE WEBHOOK VERIFIED] Event: ${event.type} (ID: ${event.id})`);
+    console.log(`[VAULTPAY CORE] Invoice ${updatedInvoice.invoiceNumber} status set to PAID.`);
+    console.log(`[VAULTPAY CORE] Amount Settled: $${Number(updatedInvoice.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD | Organization: ${updatedInvoice.organization}`);
+    console.log(`[PDF GENERATOR] Dynamic B2B Receipt Generated: ${fileName} (${buffer.length} bytes)`);
+    console.log(`[EMAIL DISPATCH] Nodemailer Dispatch: ${updatedInvoice.clientEmail} | Status: ${emailResult.success ? 'SUCCESS' : 'PENDING'}`);
+    console.log(`======================================================\n`);
+
     return {
       success: true,
       invoice: updatedInvoice,

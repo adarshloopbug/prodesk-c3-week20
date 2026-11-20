@@ -11,7 +11,7 @@ const store = require('../db/store');
  * (e.g. inv_meridian_201), the server intercepts this and returns HTTP 403 Forbidden.
  */
 function requireInvoiceOwnership(req, res, next) {
-  const invoiceId = req.params.id || req.params.invoiceId;
+  const invoiceId = req.params.id || req.params.invoiceId || (req.body && req.body.invoiceId);
 
   if (!invoiceId) {
     return res.status(400).json({
