@@ -47,10 +47,14 @@ class ApiService {
 
   // Auth
   async login(username, userId) {
+    const identifier = username || userId;
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, userId })
+      body: JSON.stringify({
+        username: username || identifier,
+        userId: userId || identifier
+      })
     });
     return this.handleResponse(res);
   }

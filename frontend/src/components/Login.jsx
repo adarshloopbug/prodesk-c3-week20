@@ -36,6 +36,7 @@ export default function Login() {
     try {
       setLoading(true);
       setSelectedPersona(account.id);
+      setUsername(account.username);
       const user = await loginAs(account.id);
       if (user.role === 'Admin') {
         navigate('/admin/dashboard', { replace: true });

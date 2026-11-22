@@ -276,11 +276,21 @@ class Store {
 
   // User operations
   getUserById(id) {
-    return this.users.find(u => u.id === id);
+    if (!id || typeof id !== 'string') return null;
+    const cleanId = id.trim().toLowerCase();
+    return this.users.find(u => u.id.toLowerCase() === cleanId);
   }
 
   getUserByUsername(username) {
-    return this.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+    if (!username || typeof username !== 'string') return null;
+    const cleanUsername = username.trim().toLowerCase();
+    return this.users.find(u => u.username.toLowerCase() === cleanUsername);
+  }
+
+  findUser(identifier) {
+    if (!identifier || typeof identifier !== 'string') return null;
+    const clean = identifier.trim().toLowerCase();
+    return this.users.find(u => u.id.toLowerCase() === clean || u.username.toLowerCase() === clean);
   }
 
   getAllClients() {

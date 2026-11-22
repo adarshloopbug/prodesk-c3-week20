@@ -27,15 +27,14 @@ export function AuthProvider({ children }) {
   const loginAs = async (userIdOrUsername) => {
     setLoading(true);
     try {
-      const res = await api.login(null, userIdOrUsername);
+      const res = await api.login(userIdOrUsername, userIdOrUsername);
       api.setToken(res.token);
       setToken(res.token);
       setUser(res.user);
-      notify('Identity Authenticated', `Switched to ${res.user.name} (${res.user.role})`, 'success');
+      notify('Identity Authenticated', `Welcome, ${res.user.name} (${res.user.role})`, 'success');
       return res.user;
     } catch (err) {
       console.error('[Auth] Login error:', err);
-      notify('Authentication Error', err.message, 'danger');
       throw err;
     } finally {
       setLoading(false);
@@ -62,18 +61,14 @@ export function AuthProvider({ children }) {
             const meRes = await api.getMe();
             setUser(meRes.user);
           } catch (e) {
-            // Token expired or invalid, default to Evelyn Croft
-            await loginAs('usr_admin_croft');
+            // Token expired or invalid, clear session
+            api.setToken(null);
+            setToken(null);
+            setUser(null);
           }
-        } else {
-          // Default to Evelyn Croft (Admin CFO)
-          await loginAs('usr_admin_croft');
         }
       } catch (err) {
-        console.error('[Auth] Init failed, fallback login:', err);
-        try {
-          await loginAs('usr_admin_croft');
-        } catch (e) {}
+        console.error('[Auth] Init demo accounts failed:', err);
       } finally {
         setLoading(false);
       }

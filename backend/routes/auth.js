@@ -11,12 +11,17 @@ const { authenticateJWT } = require('../middleware/auth');
  */
 router.post('/login', (req, res) => {
   const { username, userId } = req.body || {};
+  const rawIdentifier = userId || username || req.body?.identifier;
 
   let user = null;
-  if (userId) {
-    user = store.getUserById(userId);
-  } else if (username) {
-    user = store.getUserByUsername(username);
+  if (rawIdentifier) {
+    user = store.findUser(rawIdentifier);
+  }
+  if (!user && username) {
+    user = store.findUser(username);
+  }
+  if (!user && userId) {
+    user = store.findUser(userId);
   }
 
   if (!user) {
